@@ -1,0 +1,74 @@
+from cryptography.fernet import Fernet
+import os
+
+def generate_key():
+    """Generate and save a new secret key"""
+    key = Fernet.generate_key()
+    with open("secret.key", "wb") as key_file:
+        key_file.write(key)
+    print("[+] New key generated and saved as 'secret.key'")
+
+def load_key():
+    """Load the existing secret key"""
+    try:
+        with open("secret.key", "rb") as key_file:
+            return key_file.read()
+    except FileNotFoundError:
+        print("[-] secret.key not found. Generate it first.")
+        return None
+
+def encrypt_file(input_file, output_file, key):
+    """Encrypt the contents of a file and save to new file"""
+    fernet = Fernet(key)
+    try:
+        with open(input_file, "rb") as file:
+            data = file.read()
+        encrypted = fernet.encrypt(data)
+        with open(output_file, "wb") as file:
+            file.write(encrypted)
+        print(f"[+] File encrypted and saved as '{output_file}'")
+    except FileNotFoundError:
+        print(f"[-] File '{input_file}' not found.")
+
+def decrypt_file(input_file, output_file, key):
+    """Decrypt the contents of a file and save to new file"""
+    fernet = Fernet(key)
+    try:
+        with open(input_file, "rb") as file:
+            data = file.read()
+        decrypted = fernet.decrypt(data)
+        with open(output_file, "wb") as file:
+            file.write(decrypted)
+        print(f"[+] File decrypted and saved as '{output_file}'")
+    except FileNotFoundError:
+        print(f"[-] File '{input_file}' not found.")
+    except Exception as e:
+        print("[-] Decryption failed:", e)
+
+# --- Main Menu ---
+if __name__ == "__main__":
+    print("File Encryption/Decryption Tool")
+    print("1. Generate Key")
+    print("2. Encrypt File")
+    print("3. Decrypt File")
+    choice = input("Select an option (1/2/3): ").strip()
+
+    if choice == '1':
+        generate_key()
+
+    elif choice == '2':
+        key = load_key()
+        if key:
+            input_file = input("Enter the path of the file to encrypt: ").strip()
+            output_file = input("Enter the output encrypted file name: ").strip()
+            encrypt_file(input_file, output_file, key)
+
+    elif choice == '3':
+        key = load_key()
+        if key:
+            input_file = input("Enter the path of the file to decrypt: ").strip()
+            output_file = input("Enter the output decrypted file name: ").strip()
+            decrypt_file(input_file, output_file, key)
+
+    else:
+        print("Invalid option selected.")
